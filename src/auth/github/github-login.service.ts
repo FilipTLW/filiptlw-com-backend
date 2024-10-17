@@ -5,6 +5,7 @@ import {InjectRepository} from "@nestjs/typeorm";
 import {LoginType, User} from "../user.entity";
 import {Repository} from "typeorm";
 import {JwtService} from "@nestjs/jwt";
+import * as argon2 from "argon2";
 
 type GithubLoginResponse = {
   access_token: string;
@@ -21,7 +22,12 @@ type GithubUserDataResponse = {
 }
 
 export type LoginResponse = {
-  access_token: string;
+  accessToken: string;
+  refreshToken: string;
+}
+
+export type ClientIdResponse = {
+  clientId: string;
 }
 
 @Injectable()
@@ -30,8 +36,10 @@ export class GithubLoginService {
   constructor(private _configService: ConfigService, @InjectRepository(User) private userRepository: Repository<User>, private _jwtService: JwtService) {
   }
 
-  getClientID(): string {
-    return this._configService.get<string>('GITHUB_CLIENT_ID');
+  getClientID(): ClientIdResponse {
+    return {
+      clientId: this._configService.get<string>('GITHUB_CLIENT_ID')
+    };
   }
 
   async login(code: string): Promise<LoginResponse> {
@@ -69,12 +77,22 @@ export class GithubLoginService {
     if (!user) {
       throw new Error('The database decided to not.');
     }
+    const refreshToken = await this._jwtService.signAsync({
+      sub: user.id,
+      username: user.username,
+      superuser: user.superuser
+    }, {
+      expiresIn: '7d',
+      secret: this._configService.get<string>('JWT_REFRESH_SECRET'),
+    });
+    await this.userRepository.update(user, {refresh_token: await argon2.hash(refreshToken)});
     return {
-      access_token: await this._jwtService.signAsync({
+      accessToken: await this._jwtService.signAsync({
         sub: user.id,
         username: user.username,
         superuser: user.superuser
-      })
+      }),
+      refreshToken: refreshToken
     }
   }
 }
