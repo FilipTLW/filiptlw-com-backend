@@ -20,4 +20,7 @@ export class User {
 
     @Column({default: false})
     superuser: boolean;
+
+    @Column()
+    refresh_token: string;
 }

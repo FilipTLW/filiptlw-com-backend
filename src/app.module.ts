@@ -3,9 +3,9 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import {ConfigModule, ConfigService} from "@nestjs/config";
 import {TypeOrmModule} from "@nestjs/typeorm";
-import {User} from "./login/user.entity";
+import {User} from "./auth/user.entity";
 import {RouterModule} from "@nestjs/core";
-import { LoginModule } from './login/login.module';
+import { AuthModule } from './auth/auth.module';
 import {JwtModule} from "@nestjs/jwt";
 
 @Module({
@@ -34,15 +34,15 @@ import {JwtModule} from "@nestjs/jwt";
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
         signOptions: {
-          expiresIn: '60s'
+          expiresIn: '15m'
         }
       }),
       global: true
     }),
     RouterModule.register([
-      {path: 'login', module: LoginModule},
+      {path: 'auth', module: AuthModule},
     ]),
-    LoginModule
+    AuthModule
   ],
   controllers: [AppController],
   providers: [AppService],
