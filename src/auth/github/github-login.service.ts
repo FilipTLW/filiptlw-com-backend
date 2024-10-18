@@ -2,10 +2,11 @@ import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {ConfigService} from "@nestjs/config";
 import axios from "axios";
 import {InjectRepository} from "@nestjs/typeorm";
-import {LoginType, User} from "../user.entity";
+import {LoginType, User} from "../user/user.entity";
 import {Repository} from "typeorm";
 import {JwtService} from "@nestjs/jwt";
 import * as argon2 from "argon2";
+import {AuthService, TokensResponse} from "../auth.service";
 
 type GithubLoginResponse = {
   access_token: string;
@@ -21,11 +22,6 @@ type GithubUserDataResponse = {
   id: number;
 }
 
-export type LoginResponse = {
-  accessToken: string;
-  refreshToken: string;
-}
-
 export type ClientIdResponse = {
   clientId: string;
 }
@@ -33,7 +29,7 @@ export type ClientIdResponse = {
 @Injectable()
 export class GithubLoginService {
 
-  constructor(private _configService: ConfigService, @InjectRepository(User) private userRepository: Repository<User>, private _jwtService: JwtService) {
+  constructor(private _configService: ConfigService, @InjectRepository(User) private userRepository: Repository<User>, private _jwtService: JwtService, private _authService: AuthService) {
   }
 
   getClientID(): ClientIdResponse {
@@ -42,7 +38,7 @@ export class GithubLoginService {
     };
   }
 
-  async login(code: string): Promise<LoginResponse> {
+  async login(code: string): Promise<TokensResponse> {
     const params = new FormData();
     params.append('client_id', this._configService.get<string>('GITHUB_CLIENT_ID'));
     params.append('client_secret', this._configService.get<string>('GITHUB_CLIENT_SECRET'));
@@ -77,22 +73,6 @@ export class GithubLoginService {
     if (!user) {
       throw new Error('The database decided to not.');
     }
-    const refreshToken = await this._jwtService.signAsync({
-      sub: user.id,
-      username: user.username,
-      superuser: user.superuser
-    }, {
-      expiresIn: '7d',
-      secret: this._configService.get<string>('JWT_REFRESH_SECRET'),
-    });
-    await this.userRepository.update(user, {refresh_token: await argon2.hash(refreshToken)});
-    return {
-      accessToken: await this._jwtService.signAsync({
-        sub: user.id,
-        username: user.username,
-        superuser: user.superuser
-      }),
-      refreshToken: refreshToken
-    }
+    return this._authService.generateTokens(user);
   }
 }

@@ -1,8 +1,9 @@
 import {Controller, Get, UseGuards} from '@nestjs/common';
 import {AuthGuard} from "./auth.guard";
-import {JwtPayload} from '../utils/request'
 import {AuthService} from "./auth.service";
-import {User} from "./user.decorator";
+import {UserDecorator} from "./user/user.decorator";
+import {RefreshGuard} from "./refresh.guard";
+import {User} from "./user/user.entity";
 
 @Controller({version: '1'})
 export class AuthController {
@@ -11,7 +12,13 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @Get('profile')
-  async profile(@User() user: JwtPayload) {
+  async profile(@UserDecorator() user: User) {
     return this.authService.getProfile(user);
+  }
+
+  @UseGuards(RefreshGuard)
+  @Get('refresh')
+  async refresh(@UserDecorator() user: User) {
+    return this.authService.generateTokens(user);
   }
 }

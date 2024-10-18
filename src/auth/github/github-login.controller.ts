@@ -1,5 +1,5 @@
 import {Body, Controller, Get, HttpCode, HttpStatus, Post, Res} from '@nestjs/common';
-import {ClientIdResponse, GithubLoginService, LoginResponse} from "./github-login.service";
+import {ClientIdResponse, GithubLoginService} from "./github-login.service";
 import {Response} from "express";
 
 @Controller({path: 'github', version: '1'})
