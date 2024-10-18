@@ -3,10 +3,11 @@ import {JwtService} from "@nestjs/jwt";
 import {UserService} from "./user/user.service";
 import {JwtPayload, Request} from "../utils/request";
 import * as argon2 from "argon2";
+import {ConfigService} from "@nestjs/config";
 
 @Injectable()
 export class RefreshGuard implements CanActivate {
-  constructor(private jwtService: JwtService, private userService: UserService) {
+  constructor(private jwtService: JwtService, private userService: UserService, private configService: ConfigService) {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -16,7 +17,9 @@ export class RefreshGuard implements CanActivate {
       throw new UnauthorizedException();
     }
     try {
-      const tokenData: JwtPayload = await this.jwtService.verifyAsync(refresh_token);
+      const tokenData: JwtPayload = await this.jwtService.verifyAsync(refresh_token, {
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET')
+      });
       const user = await this.userService.getById(tokenData.sub);
       if (!await argon2.verify(user.refresh_token, refresh_token)) {
         throw new UnauthorizedException();

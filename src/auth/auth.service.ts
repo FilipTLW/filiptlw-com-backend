@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import {JwtPayload} from "../utils/request";
 import {User} from "./user/user.entity";
 import * as argon2 from "argon2";
 import {JwtService} from "@nestjs/jwt";

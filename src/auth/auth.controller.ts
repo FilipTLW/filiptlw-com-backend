@@ -1,9 +1,10 @@
-import {Controller, Get, UseGuards} from '@nestjs/common';
+import {Controller, Get, Post, Res, UseGuards} from '@nestjs/common';
 import {AuthGuard} from "./auth.guard";
 import {AuthService} from "./auth.service";
 import {UserDecorator} from "./user/user.decorator";
 import {RefreshGuard} from "./refresh.guard";
 import {User} from "./user/user.entity";
+import {Response} from "express";
 
 @Controller({version: '1'})
 export class AuthController {
@@ -17,8 +18,18 @@ export class AuthController {
   }
 
   @UseGuards(RefreshGuard)
-  @Get('refresh')
-  async refresh(@UserDecorator() user: User) {
-    return this.authService.generateTokens(user);
+  @Post('refresh')
+  async refresh(@UserDecorator() user: User, @Res({passthrough: true}) response: Response) {
+    const tokens = await this.authService.generateTokens(user);
+    response.cookie('access_token', tokens.accessToken, {
+      httpOnly: true,
+      expires: new Date(new Date().getTime() + 60 * 60 * 1000),
+      sameSite: 'strict',
+    });
+    response.cookie('refresh_token', tokens.refreshToken, {
+      httpOnly: true,
+      expires: new Date(new Date().getTime() + 60 * 60 * 1000),
+      sameSite: 'strict'
+    });
   }
 }
