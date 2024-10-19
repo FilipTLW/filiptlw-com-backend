@@ -7,6 +7,9 @@ import {User} from "./auth/user/user.entity";
 import {RouterModule} from "@nestjs/core";
 import { AuthModule } from './auth/auth.module';
 import {JwtModule} from "@nestjs/jwt";
+import { PageModule } from './content/page/page.module';
+import {Page} from "./content/page/page.entity";
+import {PageSection} from "./content/page/page-section.entity";
 
 @Module({
   imports: [
@@ -25,7 +28,7 @@ import {JwtModule} from "@nestjs/jwt";
         password: configService.get<string>('DATABASE_PASSWORD'),
         database: configService.get<string>('DATABASE_DATABASE'),
         synchronize: true,
-        entities: [User],
+        entities: [User, Page, PageSection],
       })
     }),
     JwtModule.registerAsync({
@@ -41,8 +44,10 @@ import {JwtModule} from "@nestjs/jwt";
     }),
     RouterModule.register([
       {path: 'auth', module: AuthModule},
+      {path: 'page', module: PageModule},
     ]),
-    AuthModule
+    AuthModule,
+    PageModule
   ],
   controllers: [AppController],
   providers: [AppService],

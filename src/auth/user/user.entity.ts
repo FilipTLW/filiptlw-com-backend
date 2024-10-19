@@ -21,6 +21,6 @@ export class User {
     @Column({default: false})
     superuser: boolean;
 
-    @Column()
+    @Column({default: ''})
     refresh_token: string;
 }
