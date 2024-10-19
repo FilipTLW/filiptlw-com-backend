@@ -48,4 +48,8 @@ export class AuthService {
       refreshToken: refreshToken
     }
   }
+
+  async invalidateRefreshToken(user: User): Promise<void> {
+    await this.userRepository.update(user, {refresh_token: ''});
+  }
 }

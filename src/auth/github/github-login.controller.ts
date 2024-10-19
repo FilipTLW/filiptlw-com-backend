@@ -19,12 +19,12 @@ export class GithubLoginController {
     const tokens = await this._githubLoginService.login(code);
     response.cookie('access_token', tokens.accessToken, {
       httpOnly: true,
-      expires: new Date(new Date().getTime() + 60 * 60 * 1000),
+      expires: new Date(new Date().getTime() + 15 * 60 * 1000),
       sameSite: 'strict',
     });
     response.cookie('refresh_token', tokens.refreshToken, {
       httpOnly: true,
-      expires: new Date(new Date().getTime() + 60 * 60 * 1000),
+      expires: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
       sameSite: 'strict'
     });
   }
