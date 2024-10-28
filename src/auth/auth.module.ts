@@ -12,6 +12,9 @@ import { UserService } from './user/user.service';
     TypeOrmModule.forFeature([User]),
   ],
   controllers: [GithubLoginController, AuthController],
-  providers: [GithubLoginService, AuthService, UserService]
+  providers: [GithubLoginService, AuthService, UserService],
+  exports: [
+    UserService
+  ]
 })
 export class AuthModule {}

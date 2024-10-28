@@ -1,4 +1,5 @@
-import {Column, Entity, PrimaryGeneratedColumn} from "typeorm";
+import {Column, Entity, OneToMany, PrimaryGeneratedColumn} from "typeorm";
+import {Page} from "../../content/page/page.entity";
 
 export enum LoginType {
     GITHUB = 'github'
@@ -23,4 +24,13 @@ export class User {
 
     @Column({default: ''})
     refresh_token: string;
+
+    @Column({unique: true})
+    home_path: string;
+
+    @Column()
+    next_entry: number;
+
+    @OneToMany(() => Page, page => page.user, {eager: true, cascade: ['insert', 'update']})
+    pages: Page[];
 }

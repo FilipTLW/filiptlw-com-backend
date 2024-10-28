@@ -38,7 +38,12 @@ export class AuthService {
       expiresIn: '7d',
       secret: this._configService.get<string>('JWT_REFRESH_SECRET'),
     });
-    await this.userRepository.update(user, {refresh_token: await argon2.hash(refreshToken)});
+    // Workaround because of https://github.com/typeorm/typeorm/issues/8404
+    Object.assign(user, {
+      refresh_token: await argon2.hash(refreshToken)
+    });
+    await this.userRepository.save(user);
+    // await this.userRepository.update(user, {refresh_token: await argon2.hash(refreshToken)});
     return {
       accessToken: await this._jwtService.signAsync({
         sub: user.id,
@@ -50,6 +55,11 @@ export class AuthService {
   }
 
   async invalidateRefreshToken(user: User): Promise<void> {
-    await this.userRepository.update(user, {refresh_token: ''});
+    // Workaround because of https://github.com/typeorm/typeorm/issues/8404
+    Object.assign(user, {
+      refresh_token: ''
+    });
+    await this.userRepository.save(user);
+    //await this.userRepository.update(user, {refresh_token: ''});
   }
 }

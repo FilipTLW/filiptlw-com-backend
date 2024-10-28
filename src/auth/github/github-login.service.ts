@@ -5,7 +5,6 @@ import {InjectRepository} from "@nestjs/typeorm";
 import {LoginType, User} from "../user/user.entity";
 import {Repository} from "typeorm";
 import {JwtService} from "@nestjs/jwt";
-import * as argon2 from "argon2";
 import {AuthService, TokensResponse} from "../auth.service";
 
 type GithubLoginResponse = {
@@ -66,7 +65,8 @@ export class GithubLoginService {
       await this.userRepository.insert({
         external_id: user_info.data.id.toString(),
         login_type: LoginType.GITHUB,
-        username: user_info.data.login
+        username: user_info.data.login,
+        home_path: `/home/${user_info.data.login}`
       });
     }
     user = await this.userRepository.findOneBy({external_id: user_info.data.id.toString(), login_type: LoginType.GITHUB});

@@ -4,10 +4,10 @@ import {Page} from "./page.entity";
 @Entity('PAGE_SECTIONS')
 export class PageSection {
   @PrimaryGeneratedColumn()
-  id: number;
+  id?: number;
 
   @ManyToOne(() => Page, page => page.sections)
-  page: Page;
+  page?: Page;
 
   @Column()
   title: string;
